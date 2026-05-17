@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ShieldAgent — Real Model Fraud Detection</title>
+<style>
+:root{--bg:#040a0f;--surface:#080f17;--surface2:#0d1820;--border:#1a2a38;--accent:#00e5ff;--red:#ff3d57;--green:#00ff9d;--warn:#ffaa00;--text:#e8f4f8;--muted:#7a95a5}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Arial,sans-serif}body:before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}.app{position:relative;z-index:1;min-height:100vh}header{height:66px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(4,10,15,.88);backdrop-filter:blur(12px);position:sticky;top:0}.logo{font-size:20px;font-weight:800}.logo span{color:var(--accent)}.badge{border:1px solid rgba(0,255,157,.35);color:var(--green);padding:6px 10px;border-radius:999px;font-size:12px}.grid{display:grid;grid-template-columns:280px 1fr 340px;gap:18px;padding:22px}.card{background:rgba(8,15,23,.95);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 0 30px rgba(0,0,0,.18)}.title{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700;margin-bottom:12px}.metric{margin-bottom:14px}.metric .v{font-size:32px;font-weight:850}.metric .s{font-size:12px;color:var(--muted);margin-top:3px}.accent{color:var(--accent)}.green{color:var(--green)}.red{color:var(--red)}.warn{color:var(--warn)}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid rgba(26,42,56,.7);padding:12px;text-align:left;font-size:13px}th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.pill{display:inline-flex;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800}.LOW{background:rgba(0,255,157,.1);color:var(--green);border:1px solid rgba(0,255,157,.25)}.MEDIUM{background:rgba(0,229,255,.1);color:var(--accent);border:1px solid rgba(0,229,255,.25)}.HIGH{background:rgba(255,170,0,.12);color:var(--warn);border:1px solid rgba(255,170,0,.28)}.CRITICAL{background:rgba(255,61,87,.14);color:var(--red);border:1px solid rgba(255,61,87,.32)}button{background:rgba(0,229,255,.08);color:var(--accent);border:1px solid rgba(0,229,255,.35);border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}button:hover{background:rgba(0,229,255,.15)}.score{height:7px;background:#172633;border-radius:999px;overflow:hidden;min-width:110px}.bar{height:100%;background:linear-gradient(90deg,var(--green),var(--warn),var(--red))}.log{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--muted);line-height:1.8}.alert{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;background:var(--surface2)}.small{font-size:12px;color:var(--muted)}.error{background:rgba(255,61,87,.12);border:1px solid rgba(255,61,87,.35);color:#ffd5db;padding:12px;border-radius:12px;margin-bottom:12px}.ok{background:rgba(0,255,157,.08);border:1px solid rgba(0,255,157,.25);padding:12px;border-radius:12px;color:#cffff0;margin-bottom:12px}@media(max-width:1050px){.grid{grid-template-columns:1fr}.card{overflow:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="logo">Shield<span>Agent</span></div><div class="badge" id="health">Checking model...</div></header>
+<div class="grid">
+  <aside class="card">
+    <div class="title">Real Model Metrics</div>
+    <div id="metricsBox"><div class="small">Run <code>python train.py</code> first.</div></div>
+  </aside>
+
+  <main class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px">
+      <div><div class="title" style="margin:0">Transaction Stream</div><div class="small">Rows are sampled from real KDD Cup 99 reference data saved during training.</div></div>
+      <button onclick="loadOne()">Score Transaction</button>
+    </div>
+    <div id="message"></div>
+    <table>
+      <thead><tr><th>Transaction</th><th>Region</th><th>Amount</th><th>Service</th><th>Risk Score</th><th>Action</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </main>
+
+  <aside class="card">
+    <div class="title">Agent Loop</div>
+    <div class="log">
+      <div>1. OBSERVE → receive transaction features</div>
+      <div>2. SCORE → XGBoost predicts risk probability</div>
+      <div>3. ACT → PASS / FLAG / ESCALATE / BLOCK</div>
+      <div>4. AUDIT → decision reason returned by API</div>
+    </div>
+    <br />
+    <div class="title">Live Decisions</div>
+    <div id="alerts"></div>
+  </aside>
+</div>
+</div>
+<script>
+const rows = document.getElementById('rows');
+const alerts = document.getElementById('alerts');
+const message = document.getElementById('message');
+function fmt(x){return Number(x).toFixed(3)}
+function sevClass(sev){return sev || 'LOW'}
+async function checkHealth(){
+  const r = await fetch('/api/health'); const h = await r.json();
+  document.getElementById('health').textContent = h.model_ready ? 'MODEL READY' : 'MODEL NOT TRAINED';
+  document.getElementById('health').style.color = h.model_ready ? 'var(--green)' : 'var(--warn)';
+}
+async function loadMetrics(){
+  try{const r = await fetch('/api/metrics'); if(!r.ok) throw new Error('metrics missing'); const m = await r.json();
+    document.getElementById('metricsBox').innerHTML = `
+      <div class="metric"><div class="v accent">${(m.accuracy*100).toFixed(2)}%</div><div class="s">Accuracy</div></div>
+      <div class="metric"><div class="v green">${m.f1.toFixed(4)}</div><div class="s">F1 Score</div></div>
+      <div class="metric"><div class="v warn">${m.roc_auc.toFixed(4)}</div><div class="s">ROC-AUC</div></div>
+      <div class="metric"><div class="v red">${m.rows_total.toLocaleString()}</div><div class="s">Real dataset rows used</div></div>`;
+  }catch(e){document.getElementById('metricsBox').innerHTML = '<div class="error">Metrics not found. Run <code>python train.py --sample-size 100000</code>.</div>'}
+}
+async function loadOne(){
+  try{
+    const r = await fetch('/api/stream');
+    if(!r.ok){const e = await r.json(); throw new Error(e.detail || 'API error')}
+    const x = await r.json(); const d = x.decision; const pct = Math.round(d.risk_score*100);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${x.transaction_id}</td><td>${x.region}</td><td>$${x.amount}</td><td>${x.protocol_type}/${x.service}</td><td><div class="score"><div class="bar" style="width:${pct}%"></div></div><div class="small">${fmt(d.risk_score)}</div></td><td><span class="pill ${sevClass(d.severity)}">${d.action}</span></td>`;
+    rows.prepend(tr); while(rows.children.length>12) rows.removeChild(rows.lastChild);
+    const a = document.createElement('div'); a.className='alert';
+    a.innerHTML = `<b class="${sevClass(d.severity)}">${d.severity} · ${d.action}</b><div class="small">${d.reason}</div>`;
+    alerts.prepend(a); while(alerts.children.length>5) alerts.removeChild(alerts.lastChild);
+    message.innerHTML = '<div class="ok">Real model prediction returned from /api/stream.</div>';
+  }catch(e){message.innerHTML = `<div class="error">${e.message}</div>`}
+}
+checkHealth(); loadMetrics(); setInterval(loadOne, 2500);
+</script>
+</body>
+</html>
