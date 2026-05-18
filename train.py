@@ -112,11 +112,11 @@ def build_pipeline(random_state: int) -> Pipeline:
     )
 
     classifier = XGBClassifier(
-        n_estimators=180,
-        max_depth=5,
-        learning_rate=0.08,
-        subsample=0.9,
-        colsample_bytree=0.9,
+        n_estimators=50,
+        max_depth=3,
+        learning_rate=0.1,
+        subsample=0.8,
+        colsample_bytree=0.8,
         eval_metric="logloss",
         random_state=random_state,
         n_jobs=-1,
