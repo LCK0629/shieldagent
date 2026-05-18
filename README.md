@@ -1,401 +1,181 @@
-# 🛡️ ShieldAgent — Real-time Fraud Detection AI Agent
+# ShieldAgent
 
-**Portfolio project by LCK0629**
+ShieldAgent is a fraud and intrusion-risk demo that trains an XGBoost model on the public KDD Cup 99 dataset, then exposes the model through:
 
-ShieldAgent is a production-ready **fraud detection AI agent** that demonstrates:
-- ✅ Real machine learning training on public KDD Cup 99 dataset
-- ✅ Real XGBoost model with comprehensive evaluation metrics
-- ✅ Deterministic agent loop (Observe → Score → Act)
-- ✅ Modern **Streamlit UI** with real-time streaming and dashboards
-- ✅ FastAPI backend (optional for integration)
-- ✅ No fake data, no simulated dashboards
+- a Streamlit dashboard in `streamlit_app.py`
+- an optional FastAPI backend in `app.py`
+- a deterministic agent layer in `agent.py`
 
-> **Key distinction**: This project uses the public **KDD Cup 99 dataset** via `sklearn.datasets.fetch_kddcup99`. All training data, model outputs, and dashboard streams are real—not synthetic or mocked.
+The training data is loaded with `sklearn.datasets.fetch_kddcup99`; no fake training dataset is committed to this repository.
 
----
+## Quick Start
 
-## 📊 What This Project Demonstrates
-
-### Machine Learning Pipeline
-- **Real dataset**: KDD Cup 99 (41 network features, binary classification)
-- **Preprocessing**: Numeric scaling, categorical one-hot encoding, missing value imputation
-- **Model**: XGBoost classifier (n_estimators=180, max_depth=5)
-- **Evaluation metrics**: Accuracy, Precision, Recall, F1, ROC-AUC, Confusion Matrix
-
-### Agent Architecture
-```
-┌─────────────────────────────────────────────────────┐
-│ TRANSACTION INPUT (41 KDD features)                 │
-└──────────────────┬──────────────────────────────────┘
-                   ↓
-         ┌──────────────────────┐
-         │ OBSERVE              │ ← Validate, format
-         └──────────────────┬───┘
-                            ↓
-         ┌──────────────────────┐
-         │ SCORE                │ ← XGBoost predict_proba
-         └──────────────────┬───┘
-                            ↓
-         ┌──────────────────────┐
-         │ ACT                  │ ← Policy thresholds
-         └──────────────────┬───┘
-                            ↓
-┌─────────────────────────────────────────────────────┐
-│ DECISION: {action, risk_score, reason, timestamp}   │
-│ Actions: PASS / FLAG / ESCALATE / BLOCK             │
-└─────────────────────────────────────────────────────┘
-```
-
-### Real-time UI Features
-- **📊 Dashboard**: Model metrics, quick transaction scan, performance overview
-- **📡 Live Stream**: Real-time transaction scoring from reference data
-- **⚙️ Model Explorer**: Manual transaction testing, configuration inspection
-- **📈 Performance**: Detailed classification reports, confusion matrices
-- **💾 Transaction Log**: Audit trail with filtering and statistics
-
----
-
-## 🏗️ Project Structure
-
-```
-shieldagent/
-├── train.py                      # XGBoost training pipeline
-├── agent.py                      # Core agent logic (Observe/Score/Act)
-├── streamlit_app.py              # 🆕 Real-time Streamlit dashboard
-├── app.py                        # FastAPI backend (optional)
-├── requirements.txt              # All dependencies
-├── README.md                     # This file
-│
-├── models/                       # Created by train.py
-│   ├── fraud_model.pkl          # Trained pipeline (sklearn + XGBoost)
-│   └── metrics.json             # Evaluation results
-│
-├── data/                         # Created by train.py
-│   └── reference_transactions.csv # Real KDD rows for dashboard stream
-│
-└── static/                       # FastAPI dashboard (legacy)
-    └── index.html
-```
-
----
-
-## 🚀 Quick Start
-
-### 1. Environment Setup
+Run these commands from the project folder:
 
 ```bash
+cd shieldagent
 python -m venv venv
 ```
 
-**Windows (PowerShell):**
-```bash
-.\venv\Scripts\Activate.ps1
-```
+Activate the environment:
 
-**macOS/Linux:**
 ```bash
+# Windows PowerShell
+.\venv\Scripts\Activate.ps1
+
+# Windows cmd
+venv\Scripts\activate.bat
+
+# macOS/Linux
 source venv/bin/activate
 ```
 
-**Install dependencies:**
+Install dependencies:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Train the Model
+Train the model:
 
-**Development (100k sample, ~2-3 minutes):**
 ```bash
 python train.py --sample-size 100000
 ```
 
-**Production (all rows, ~10-15 minutes):**
-```bash
-python train.py --sample-size 0
+This creates:
+
+```text
+models/fraud_model.pkl
+models/metrics.json
+data/reference_transactions.csv
 ```
 
-**Output:**
-```
-models/fraud_model.pkl           # Trained pipeline
-models/metrics.json              # Performance metrics
-data/reference_transactions.csv  # 300 real reference transactions
-```
-
-### 3. Run the Streamlit App
+Start the Streamlit dashboard:
 
 ```bash
 streamlit run streamlit_app.py
 ```
 
-Open: **http://localhost:8501**
+Open:
 
----
-
-## 📊 Dashboard Features
-
-### 🏠 Dashboard Tab
-- Real-time model performance metrics
-- Quick transaction analyzer
-- Classification metrics summary
-
-### 📡 Live Stream Tab
-- Real-time transaction batch processing
-- Live statistics (PASS / FLAG / ESCALATE / BLOCK counts)
-- Expandable transaction details
-- Auto-refresh capability
-
-### ⚙️ Model Explorer Tab
-- Manual transaction testing with JSON input
-- Feature configuration inspection
-- Decision threshold visualization
-
-### 📈 Performance Tab
-- Complete classification metrics (Accuracy, Precision, Recall, F1, ROC-AUC)
-- Confusion matrix visualization
-- Detailed per-class performance reports
-- Dataset statistics (total rows, train/test split)
-
-### 💾 Transaction Log Tab
-- Persistent audit trail
-- Transaction filtering and search
-- Summary statistics (Total, Passed, Flagged, Blocked)
-
----
-
-## 🎯 Agent Decision Policy
-
-The agent makes deterministic decisions based on XGBoost risk scores:
-
-| Risk Score | Action | Severity | Meaning |
-|---:|---|---|---|
-| < 0.35 | **PASS** | LOW | Normal transaction, allow |
-| 0.35 – 0.70 | **FLAG** | MEDIUM | Unusual pattern, monitor |
-| 0.70 – 0.90 | **ESCALATE** | HIGH | High risk, analyst review |
-| ≥ 0.90 | **BLOCK** | CRITICAL | Attack detected, block |
-
----
-
-## 📈 Model Performance (KDD Cup 99)
-
-Typical metrics after training on 100k sample:
-
-```
-Dataset:          KDD Cup 99 (SA subset)
-Total rows:       100,000
-Training rows:    80,000
-Test rows:        20,000
-Attack rate:      ~20%
-
-Accuracy:         ~92%
-Precision:        ~89%
-Recall:           ~95%
-F1 Score:         ~92%
-ROC AUC:          ~98%
+```text
+http://localhost:8501
 ```
 
-*Metrics vary slightly based on random seed and sample size.*
+## Windows One-Click Start
 
----
+From the `shieldagent` folder, double-click:
 
-## 🔌 API Endpoints (FastAPI Backend)
+```text
+START.bat
+```
 
-If using FastAPI instead of Streamlit:
+It creates the virtual environment if needed, installs dependencies, trains the model if missing, and starts the Streamlit dashboard.
+
+You can also run:
+
+```cmd
+run.bat
+```
+
+## macOS/Linux Launcher
+
+From the `shieldagent` folder:
+
+```bash
+chmod +x run.sh
+./run.sh
+```
+
+## Optional FastAPI Backend
+
+After training the model, run:
 
 ```bash
 uvicorn app:app --reload
 ```
 
-### Health Check
-```bash
-curl http://localhost:8000/api/health
+Open:
+
+```text
+http://localhost:8000
 ```
 
-### Get Model Metrics
-```bash
-curl http://localhost:8000/api/metrics
-```
+Useful endpoints:
 
-### Predict Single Transaction
-```bash
-curl -X POST http://localhost:8000/api/predict \
-  -H "Content-Type: application/json" \
-  -d '{...transaction_json...}'
-```
+- `GET /api/health`
+- `GET /api/metrics`
+- `POST /api/predict`
+- `GET /api/stream`
 
-### Stream Reference Transaction
-```bash
-curl http://localhost:8000/api/stream
-```
+## Common Tasks
 
----
-
-## 📝 Code Examples
-
-### Using the Agent Directly
-
-```python
-from agent import ShieldAgent
-
-agent = ShieldAgent()
-
-transaction = {
-    "transaction_id": "TXN-001",
-    "duration": 0,
-    "protocol_type": "tcp",
-    "service": "http",
-    "flag": "SF",
-    # ... all 41 KDD features required
-}
-
-decision = agent.run_once(transaction)
-print(f"Action: {decision.action}")
-print(f"Risk: {decision.risk_score:.4f}")
-print(f"Reason: {decision.reason}")
-```
-
-### Training Custom Config
+Use a smaller training sample for a faster first run:
 
 ```bash
-python train.py --sample-size 50000 --test-size 0.25 --random-state 123
+python train.py --sample-size 50000
 ```
 
----
-
-## 🎯 Why This Is Portfolio-Worthy
-
-✅ **Real data, real model**: Not synthetic or mocked  
-✅ **Complete ML pipeline**: From data loading → training → evaluation  
-✅ **Production-quality UI**: Professional Streamlit dashboard with multiple views  
-✅ **Auditable decisions**: Transparent scoring and action policy  
-✅ **Real-time streaming**: Live transaction processing from reference data  
-✅ **Comprehensive metrics**: Precision/Recall/F1/ROC-AUC, not just accuracy  
-✅ **Clean architecture**: Separated train/agent/UI concerns  
-✅ **Documented code**: Clear comments and docstrings  
-
----
-
-## 🔧 Advanced Usage
-
-### Change Decision Thresholds
-
-Edit `agent.py` line ~43:
-```python
-self.thresholds = {
-    "pass": 0.30,    # More lenient
-    "flag": 0.60,
-    "block": 0.85,
-}
-```
-
-### Use Different Sample Size
+Use the full available subset:
 
 ```bash
-python train.py --sample-size 50000  # Faster, less accurate
-python train.py --sample-size 0      # All rows, most accurate
+python train.py --sample-size 0
 ```
 
-### Retrain with Different Random State
+Run Streamlit on another port:
 
-```bash
-python train.py --random-state 999
-```
-
----
-
-## 📚 Dataset Background
-
-**KDD Cup 99** (from UCI ML Repository):
-- Original use: Intrusion detection competition (1999)
-- Size: ~5M records (fetches ~500k with `fetch_kddcup99`)
-- Features: 41 network connection attributes
-- Classes: Normal vs. Attack (binary)
-- License: Public domain
-
-**Why KDD Cup 99?**
-- Public, downloadable via sklearn
-- Real network data (not synthetic)
-- Realistic feature engineering problem
-- Well-established baseline metrics
-- Good for demonstrating ML pipeline
-
-**Portfolio positioning**: This project demonstrates a **fraud/attack risk detection prototype**. The architecture can easily adapt to modern fraud datasets (IEEE-CIS, payment networks) if needed.
-
----
-
-## 🐛 Troubleshooting
-
-**Model not found error:**
-```
-FileNotFoundError: Model not found at models/fraud_model.pkl
-```
-→ Run `python train.py --sample-size 100000` first
-
-**Missing dependencies:**
-```
-ModuleNotFoundError: No module named 'xgboost'
-```
-→ Run `pip install -r requirements.txt`
-
-**Streamlit port already in use:**
 ```bash
 streamlit run streamlit_app.py --server.port 8502
 ```
 
-**Training is slow:**
+Retrain the model:
+
 ```bash
-python train.py --sample-size 50000  # Use smaller sample
+python train.py --sample-size 100000
 ```
 
----
+Existing model and metrics files will be overwritten.
 
-## 📋 Feature Columns (KDD Cup 99)
+## Project Structure
 
-The model uses these 41 features:
+```text
+shieldagent/
++-- agent.py
++-- app.py
++-- streamlit_app.py
++-- train.py
++-- requirements.txt
++-- README.md
++-- RUN_NOW.txt
++-- START.bat
++-- run.bat
++-- run.sh
++-- data/
+|   +-- README.md
+|   +-- reference_transactions.csv
++-- models/
+    +-- fraud_model.pkl
+    +-- metrics.json
+```
 
-**Network Features:**
-- `duration`, `protocol_type`, `service`, `flag`
-- `src_bytes`, `dst_bytes`, `land`, `wrong_fragment`, `urgent`, `hot`
+## Troubleshooting
 
-**Connection Statistics:**
-- `num_failed_logins`, `logged_in`, `num_compromised`, `root_shell`
-- `su_attempted`, `num_root`, `num_file_creations`, `num_shells`
-- `num_access_files`, `num_outbound_cmds`
+If you see `Model not found`, train first:
 
-**Login Features:**
-- `is_host_login`, `is_guest_login`
+```bash
+python train.py --sample-size 100000
+```
 
-**Aggregate Features:**
-- `count`, `srv_count`, `serror_rate`, `srv_serror_rate`, `rerror_rate`
-- `srv_rerror_rate`, `same_srv_rate`, `diff_srv_rate`, `srv_diff_host_rate`
+If Streamlit cannot start, another process may already be using port `8501`; run it on `8502` instead:
 
-**Destination Host Features:**
-- `dst_host_count`, `dst_host_srv_count`, `dst_host_same_srv_rate`
-- `dst_host_diff_srv_rate`, `dst_host_same_src_port_rate`, `dst_host_srv_diff_host_rate`
-- `dst_host_serror_rate`, `dst_host_srv_serror_rate`, `dst_host_rerror_rate`
-- `dst_host_srv_rerror_rate`
+```bash
+streamlit run streamlit_app.py --server.port 8502
+```
 
----
+If dependency installation fails, confirm you are using Python 3.9 or newer and that the virtual environment is activated.
 
-## 📄 License & Attribution
+## Notes
 
-**Data**: KDD Cup 99 (UCI ML Repository, public domain)  
-**Framework**: scikit-learn, XGBoost, Streamlit  
-**Author**: LCK0629
-
----
-
-## 🚀 Future Enhancements
-
-- [ ] Integrate IEEE-CIS Fraud Detection dataset
-- [ ] Add feature importance visualization (SHAP)
-- [ ] Implement model versioning and A/B testing
-- [ ] Add real-time metrics export (Prometheus)
-- [ ] Integrate with PostgreSQL for transaction history
-- [ ] Add model retraining pipeline (scheduled or on-demand)
-- [ ] Multi-model ensemble strategy
-- [ ] Drift detection and model monitoring
-
----
-
-**Last updated**: 2026-05-18  
-**Status**: Portfolio-ready ✅
+- Model metrics depend on sample size and random split.
+- `data/reference_transactions.csv` is generated by training and used by the dashboard stream.
+- The agent action thresholds are stored in the trained model bundle and used by `agent.py`.

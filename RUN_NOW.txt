@@ -1,218 +1,124 @@
-═══════════════════════════════════════════════════════════════════
-                    🛡️ ShieldAgent - 已验证可运行 ✓
-═══════════════════════════════════════════════════════════════════
+ShieldAgent - Run Now
+=====================
 
-📍 项目位置: shieldagent/
+Project folder:
 
-✅ 所有测试已通过:
-   ✓ 依赖安装成功
-   ✓ 模型训练成功 (fraud_model.pkl - 186KB)
-   ✓ Agent加载成功
-   ✓ Streamlit就绪
-   ✓ 参考数据已生成 (300个真实交易)
+    shieldagent/
 
-═══════════════════════════════════════════════════════════════════
+Recommended Windows run:
 
-🚀 运行方式 (选一种)
+    Double-click START.bat
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-方式 1: 一键启动 (推荐 Windows)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+What START.bat does:
 
-双击: START.bat
+    1. Creates venv if it does not exist.
+    2. Activates the virtual environment.
+    3. Installs the main dependencies.
+    4. Trains the model if models/fraud_model.pkl is missing.
+    5. Starts the Streamlit dashboard.
 
-✓ 自动安装依赖
-✓ 自动训练模型
-✓ 自动启动仪表板
-✓ 浏览器自动打开
+Dashboard URL:
 
-(第一次运行 ~2-3分钟, 后续 ~10秒)
+    http://localhost:8501
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-方式 2: 命令行 (Windows/Mac/Linux)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-# 激活环境
-.\venv\Scripts\activate.bat    (Windows)
-source venv/bin/activate       (Mac/Linux)
+Manual Run
+----------
 
-# 运行应用
-streamlit run streamlit_app.py
+Open a terminal in the shieldagent folder:
 
-# 浏览器打开
-http://localhost:8501
+    cd shieldagent
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-方式 3: 完整手动流程 (教学)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Create and activate a virtual environment:
 
-# 1. 创建虚拟环境
-python -m venv venv
+    python -m venv venv
 
-# 2. 激活环境
-.\venv\Scripts\activate.bat
+Windows PowerShell:
 
-# 3. 安装依赖
-pip install -r requirements.txt
+    .\venv\Scripts\Activate.ps1
 
-# 4. 训练模型 (如果还没训练)
-python train.py --sample-size 100000
+Windows cmd:
 
-# 5. 启动仪表板
-streamlit run streamlit_app.py
+    venv\Scripts\activate.bat
 
-═══════════════════════════════════════════════════════════════════
+macOS/Linux:
 
-📊 运行后会看到
+    source venv/bin/activate
 
-仪表板打开在: http://localhost:8501
+Install dependencies:
 
-侧边栏菜单有5个选项:
-┌──────────────────────────────────────────────────────────┐
-│ 🏠 Dashboard      → 模型指标 + 快速扫描                   │
-│ 📡 Live Stream    → 实时交易流处理                       │
-│ ⚙️  Model Explorer → 手动交易测试                        │
-│ 📈 Performance    → 详细分类报告                         │
-│ 💾 Transaction Log → 审计日志                            │
-└──────────────────────────────────────────────────────────┘
+    pip install -r requirements.txt
 
-点击菜单项立即看到数据!
+Train the model:
 
-═══════════════════════════════════════════════════════════════════
+    python train.py --sample-size 100000
 
-📈 模型性能 (已验证)
+Start the dashboard:
 
-训练数据: 20,000行 KDD Cup 99
-模型: XGBoost (41特征)
+    streamlit run streamlit_app.py
 
-Accuracy:  100%
-Precision: 100%
-Recall:    100%
-F1 Score:  100%
-ROC-AUC:   100%
+Open:
 
-(注: 20k样本较小，完整数据 ~92% 精度)
+    http://localhost:8501
 
-═══════════════════════════════════════════════════════════════════
 
-📂 项目结构
+Optional FastAPI Backend
+------------------------
 
-shieldagent/
-├── 🚀 START.bat .................. 一键启动脚本
-├── 🎨 streamlit_app.py ........... 仪表板 (500+行)
-├── 🤖 agent.py ................... Agent逻辑 (91行)
-├── 📚 train.py ................... 训练脚本 (198行)
-├── 📖 README.md .................. 完整文档
-├── ⚡ QUICKSTART.md ............. 快速开始
-├── 💼 PORTFOLIO.md ............... 组合展示
-├── ✅ VERIFIED_WORKING.md ....... 验证报告
-│
-├── 📊 models/
-│   ├── fraud_model.pkl .......... 训练模型 (186KB)
-│   └── metrics.json ............ 性能指标
-│
-└── 📋 data/
-    └── reference_transactions.csv . 300个真实交易
+After training, run:
 
-═══════════════════════════════════════════════════════════════════
+    uvicorn app:app --reload
 
-🎯 Dashboard 功能演示
+Open:
 
-点击 Dashboard → "Score Next Transaction"
-  ↓
-看到真实交易被评分:
-  • Transaction ID: TXN-8234567
-  • Region: SG (新加坡)
-  • Amount: $123.45
-  • Merchant: MER-5678
+    http://localhost:8000
 
-  决策: ✅ PASS (低风险)
-  风险得分: 0.1234
+Useful endpoints:
 
-点击 Live Stream → 选择交易数 10 → Score
-  ↓
-看到10个交易的实时处理:
-  • 统计: ✅7个PASS, 🚩2个FLAG, ⚠️1个ESCALATE
-  • 可展开查看每个交易的详情
+    GET  /api/health
+    GET  /api/metrics
+    GET  /api/stream
+    POST /api/predict
 
-点击 Model Explorer → 修改JSON → Analyze
-  ↓
-自定义测试模型:
-  • 修改交易参数
-  • 看模型的实时反应
-  • 理解特征如何影响决策
 
-═══════════════════════════════════════════════════════════════════
+Generated Files
+---------------
 
-💡 常见问题速查
+Training creates:
 
-Q: 打开后是空白?
-A: 点左上☰ 菜单, 选择 "Dashboard"
+    models/fraud_model.pkl
+    models/metrics.json
+    data/reference_transactions.csv
 
-Q: 数据从哪来?
-A: 真实KDD Cup 99数据集, 由train.py训练生成
 
-Q: 可以用更多数据吗?
-A: 可以! 运行:
-   python train.py --sample-size 100000
+Expected First Run Time
+-----------------------
 
-Q: 分数都是0或1?
-A: 正常。小样本会过拟合。用更大样本重训。
+Dependency installation and model training may take a few minutes.
+Later runs are faster because the virtual environment and trained model already exist.
 
-Q: 想部署到网络?
-A: 推送GitHub → https://share.streamlit.io 连接
 
-Q: 想修改阈值?
-A: 编辑 agent.py 第43行的 thresholds 字典
+Troubleshooting
+---------------
 
-═══════════════════════════════════════════════════════════════════
+Model not found:
 
-⏱️ 时间预期
+    python train.py --sample-size 100000
 
-首次运行:     2-3 分钟 (安装+训练)
-后续运行:     10 秒   (只启动UI)
-模型训练:
-  - 20k样本:   1 分钟
-  - 100k样本:  2-3 分钟
-  - 全量:      10-15 分钟
+Port 8501 already in use:
 
-═══════════════════════════════════════════════════════════════════
+    streamlit run streamlit_app.py --server.port 8502
 
-✨ 你现在拥有一个:
+Need faster training:
 
-✓ 真实的ML模型 (在真实数据上训练)
-✓ 真实的Agent (确定性、可审计)
-✓ 专业的UI (Streamlit 5个交互式视图)
-✓ 实时的数据流 (真实交易实时评分)
-✓ 完整的文档 (README/QUICKSTART/PORTFOLIO)
+    python train.py --sample-size 50000
 
-适合用于:
-□ Portfolio投资组合展示
-□ 面试技术讨论
-□ GitHub开源项目
-□ 实际应用基础
+Use all available rows from the selected KDD Cup 99 subset:
 
-═══════════════════════════════════════════════════════════════════
+    python train.py --sample-size 0
 
-👉 现在就运行:
 
-Windows:  双击 START.bat
-Mac/Linux: streamlit run streamlit_app.py
+Status
+------
 
-浏览器自动打开: http://localhost:8501
-
-═══════════════════════════════════════════════════════════════════
-
-📚 文档快速导航:
-
-  README.md ................. 完整技术文档 (450+ 行)
-  QUICKSTART.md ............ 5分钟快速开始
-  PORTFOLIO.md ............. 招聘/面试展示
-  VERIFIED_WORKING.md ...... 验证运行报告
-  DEPLOYMENT.md ............ 部署指南
-
-═══════════════════════════════════════════════════════════════════
-
-项目状态: ✅ READY TO RUN
-
-开始使用吧！🚀
+Ready to run once dependencies are installed and the model has been trained.
