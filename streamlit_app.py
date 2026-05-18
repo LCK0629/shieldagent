@@ -41,8 +41,9 @@ st.set_page_config(
 @st.cache_resource
 def load_agent() -> ShieldAgent:
     if not MODEL_PATH.exists():
-        st.error("❌ Model not trained. Run `python train.py --sample-size 100000` first.")
-        st.stop()
+        with st.spinner("Training model on KDD Cup 99 dataset — this takes about 1-2 minutes on first run..."):
+            from train import train
+            train(sample_size=30000, test_size=0.2, random_state=42)
     return ShieldAgent(MODEL_PATH)
 
 
